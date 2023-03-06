@@ -1,6 +1,6 @@
 Module {
 	name: 'openendpoints'
-	description: 'web'
+	description: "It's like Hamburger Helper, but DevOp REST endpoints for projects instead."
 	version: '0.0.0'
 	license: 'MIT'
 	dependencies: []
