@@ -1,5 +1,7 @@
 # open-endpoints
 
+![build status](https://img.shields.io/github/actions/workflow/status/thearchitector/open-endpoints/ci.yaml?style=flat-square)
+
 It's like Hamburger Helper, but DevOps REST endpoints for projects instead.
 
 A set of arguably useful endpoints for various management, testing, and distribution purposes.
