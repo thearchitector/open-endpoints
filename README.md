@@ -10,11 +10,11 @@ A set of arguably useful endpoints for various management, testing, and distribu
 
 - [/metrics/generic](src/metrics.v)
 
-    Sending a `POST` request to this endpoint will store the given number alongside the provided slug.
+    Sending a `POST` request to this endpoint will store the given number alongside the provided slug. Slugs must be alphanumeric.
     
     ```json
     {
-        "slug": "your-project-name",
+        "slug": "<your project slug>",
         "metric": 47,
         "percentage": false,
         "authkey": "<the key returned after initial creation used for updating>"
