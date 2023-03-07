@@ -25,11 +25,14 @@ A set of arguably useful endpoints for various management, testing, and distribu
     $ curl thearchitector.dev/openendpoints/metrics/generic&slug=YOUR_SLUG
     {
         "schemaVersion": 1,
-        "label": "override me",
+        "label": "metric",
         "message": "47.8",
-        "color": "green"
     }
     ```
+
+## Development
+
+This project is an experiment / prototype application running on the V language and builtin application server `vweb`. Structurally, each endpoint group is a file that contains both the routes and controlling functions for said group.
 
 ## License
 
