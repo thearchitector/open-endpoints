@@ -12,7 +12,7 @@ pub mut:
 
 fn main() {
 	// open a db connection
-	port := os.getenv_opt('PGPORT') or { '5432' }
+	mut port := os.getenv_opt('PGPORT') or { '5432' }
 	db := pg.connect(pg.Config{
 		host: os.getenv_opt('PGHOST') or { 'localhost' }
 		port: port.int()
@@ -26,7 +26,8 @@ fn main() {
 		db.close()
 	}
 
+	port = os.getenv_opt('PORT') or { '8000' }
 	vweb.run(App{
 		db: db
-	}, 8000)
+	}, port.int())
 }

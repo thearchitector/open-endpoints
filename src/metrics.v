@@ -4,7 +4,7 @@ import json
 import vweb
 import regex
 
-const slug_pattern = regex.regex_opt(r'[\A\a\d]+[\w\-]*[\A\a\d]+')!
+const slug_pattern = regex.regex_opt(r'^[\A\a\d]+$') or { panic("bad pattern") }
 
 [table: 'metrics']
 struct GeneicMetric {
@@ -28,7 +28,7 @@ pub fn (mut app App) get_metric(slug string) vweb.Result {
 	if !slug_pattern.matches_string(slug) {
 		app.set_status(422, '')
 		return app.json({
-			'error': 'Invalid slug. Slugs must begin and end with a letter or number, and may only contain letters, number, underscores, and hyphens.'
+			'error': 'Invalid slug. Slugs must only contain letters and numbers.'
 		})
 	}
 
@@ -65,7 +65,7 @@ pub fn (mut app App) create_metric() vweb.Result {
 	if !slug_pattern.matches_string(payload.slug) {
 		app.set_status(422, '')
 		return app.json({
-			'error': 'Invalid slug. Slugs must begin and end with a letter or number, and may only contain letters, number, underscores, and hyphens.'
+			'error': 'Invalid slug. Slugs must only contain letters and numbers.'
 		})
 	}
 
