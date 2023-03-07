@@ -26,6 +26,10 @@ fn main() {
 		db.close()
 	}
 
+	sql db {
+		create table GenericMetric
+	}
+
 	port = os.getenv_opt('PORT') or { '8000' }
 	vweb.run(App{
 		db: db

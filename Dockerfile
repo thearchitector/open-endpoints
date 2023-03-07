@@ -8,9 +8,10 @@ ENV PATH /opt/vlang:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 WORKDIR /opt/vlang
 RUN apk --no-cache add \
-        bash \
         git \
-        build-base && \
+        build-base \
+        bash \
+        vim && \
     git clone https://github.com/vlang/v/ /opt/vlang && \
     make
 
@@ -21,7 +22,9 @@ FROM v
 RUN apk --no-cache add \
         libpq \
         postgresql-dev \
-        postgresql-client
+        postgresql-client \
+        curl \
+        jq
 
 WORKDIR /open-endpoints
 COPY ./ /open-endpoints

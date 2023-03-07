@@ -21,4 +21,6 @@ services:
       - ./:/open-endpoints
     ports:
       - 8000:8000
-    command: v watch -cg crun .
+    command: v watch run .
+    depends_on:
+      - db
