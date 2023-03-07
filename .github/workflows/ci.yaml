@@ -10,7 +10,7 @@ jobs:
       - name: Setup V
         uses: vlang/setup-v@v1
       - name: Check formatting
-        uses: v fmt -verify .
+        run: v fmt -verify .
 
   test:
     runs-on: ubuntu-latest
