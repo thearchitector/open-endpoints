@@ -5,6 +5,7 @@
 FROM alpine:3.17 as v
 
 ENV PATH /opt/vlang:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV VFLAGS "-cc gcc -prod"
 
 WORKDIR /opt/vlang
 RUN apk --no-cache add \
@@ -12,7 +13,10 @@ RUN apk --no-cache add \
         build-base \
         bash \
         vim && \
-    git clone https://github.com/vlang/v/ /opt/vlang && \
+    git clone \
+        --depth 1 \
+        https://github.com/vlang/v \
+        /opt/vlang && \
     make
 
 
@@ -20,8 +24,7 @@ RUN apk --no-cache add \
 FROM v
 
 RUN apk --no-cache add \
-        libpq \
-        postgresql-dev \
+        libpq-dev \
         postgresql-client \
         curl \
         jq
@@ -29,4 +32,6 @@ RUN apk --no-cache add \
 WORKDIR /open-endpoints
 COPY ./ /open-endpoints
 
-CMD [ "v", "crun", "." ]
+RUN v .
+
+CMD [ "./open-endpoints" ]

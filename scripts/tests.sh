@@ -1,7 +1,6 @@
 #!/bin/bash
 
-sleep 3
-v run . &
+./open-endpoints &
 set -e
 PORT=${PORT:-8000}
 sleep 3

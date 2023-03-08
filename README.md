@@ -1,6 +1,7 @@
 # open-endpoints
 
 ![build status](https://img.shields.io/github/actions/workflow/status/thearchitector/open-endpoints/ci.yaml?style=flat-square)
+![mit license](https://img.shields.io/github/license/thearchitector/open-endpoints?style=flat-square)
 
 It's like Hamburger Helper, but DevOps REST endpoints for projects instead.
 
@@ -45,4 +46,6 @@ $ docker compose run --rm app ./scripts/tests.sh
 
 ## License
 
-This tool is licensed under MIT. See the license [here](./LICENSE).
+Copyright (c) 2023 Elias Gabriel
+
+This tool and its source code are licensed under MIT. See the license [here](./LICENSE).
