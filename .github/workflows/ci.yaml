@@ -16,5 +16,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Create .env
+        run: |
+          echo "POSTGRES_USER=ghaction" > .env
+          echo "POSTGRES_PASSWORD=testing" >> .env
+          echo "POSTGRES_DB=ghaction" >> .env
+          echo "PGHOST=db" >> .env
+          echo "PGUSER=ghaction" >> .env
+          echo "PGPASSWORD=testing" >> .env
+          echo "PGDATABASE=ghaction" >> .env
       - name: Run tests
         run: docker compose run --rm app ./scripts/tests.sh
