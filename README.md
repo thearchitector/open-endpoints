@@ -1,7 +1,7 @@
-# open-endpoints
+# openendpoint-tools
 
-![build status](https://img.shields.io/github/actions/workflow/status/thearchitector/open-endpoints/ci.yaml?style=flat-square)
-![mit license](https://img.shields.io/github/license/thearchitector/open-endpoints?style=flat-square)
+![build status](https://img.shields.io/github/actions/workflow/status/thearchitector/openendpoint-tools/ci.yaml?style=flat-square)
+![mit license](https://img.shields.io/github/license/thearchitector/openendpoint-tools?style=flat-square)
 
 It's like Hamburger Helper, but DevOps REST endpoints for projects instead.
 

@@ -29,9 +29,9 @@ RUN apk --no-cache add \
         curl \
         jq
 
-WORKDIR /open-endpoints
-COPY ./ /open-endpoints
+WORKDIR /openendpoint-tools
+COPY ./ /openendpoint-tools
 
-RUN v .
+RUN v -output server .
 
-CMD [ "./open-endpoints" ]
+CMD [ "./server" ]

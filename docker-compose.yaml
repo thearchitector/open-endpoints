@@ -5,7 +5,7 @@ services:
     image: postgres:alpine
     env_file: .env
     volumes:
-      - openendoints-db:/var/lib/postgresql/data
+      - openendoint-db:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
       interval: 30s
@@ -28,7 +28,7 @@ services:
     restart: always
 
 volumes:
-  openendoints-db:
+  openendoint-db:
 
 networks:
   openendpoint-tools:
