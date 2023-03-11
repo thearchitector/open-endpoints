@@ -4,7 +4,6 @@
 # == V STAGE
 FROM alpine:3.17 as v
 
-ENV PATH /opt/vlang:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV VFLAGS "-cc gcc -prod"
 
 WORKDIR /opt/vlang
@@ -15,9 +14,9 @@ RUN apk --no-cache add \
         vim && \
     git clone \
         --depth 1 \
-        https://github.com/vlang/v \
-        /opt/vlang && \
-    make
+        https://github.com/vlang/v . && \
+    make && \
+    ./v symlink
 
 
 # == APPLICATION STAGE
