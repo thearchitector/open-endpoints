@@ -17,6 +17,7 @@ const {
   degToRad,
   initInput,
   onInput,
+  Text,
 } = kontra;
 const { canvas, context } = init();
 
@@ -37,6 +38,15 @@ const paddleColorSelf = "green";
 const paddleSpeed = ballSpeed * 2;
 
 // game objects
+const flash = Text({
+  text: "Waiting for 3 players...",
+  font: "28px monospace",
+  color: "white",
+  x: width / 2,
+  y: height / 2,
+  anchor: { x: 0.5, y: 0.5 },
+  textAlign: "center",
+});
 const ball = Sprite({
   x: (width - ballSize) / 2,
   y: (height - ballSize) / 2,
@@ -82,7 +92,7 @@ const paddles = [
 // game logic
 const scene = Scene({
   id: "arena",
-  objects: [ball].concat(paddles),
+  objects: [...paddles, flash],
 });
 const loop = GameLoop({
   blur: true,
@@ -183,14 +193,9 @@ function hostGame() {
     // if there are no paddles available, disconnect them (with no error message!)
     // also send a message to all the other clients that the game has begun
     console.log("connected to", conn.peer);
-    if (takenPaddles != 4) {
-      // conn.close();
-      // Object.keys(clients).forEach((conn) => conn.send({ start: true }));
-
-      // give the ball a random heading
-      randomizeBallHeading();
-      loop.start();
-      // return;
+    if (takenPaddles >= 4) {
+      conn.close();
+      return;
     }
 
     // keep track of the connection and assign the client a paddle
@@ -236,7 +241,7 @@ function joinGame() {
 
 function updateClient(conn, data) {
   // initial startup
-  if (loop.isStopped && "paddleAssignment" in data) {
+  if ("paddleAssignment" in data) {
     assignedPaddle = data["paddleAssignment"];
     let paddle = paddles[assignedPaddle];
     paddle.color = paddleColorSelf;
@@ -265,7 +270,19 @@ function updateClient(conn, data) {
     }
 
     document.getElementById("clientID").innerHTML = "Connected! ✔";
+    loop.render();
+  }
+
+  if ("start" in data && data["start"]) {
+    scene.remove(flash);
+    scene.add(ball);
     loop.start();
+  }
+
+  if ("flash" in data) {
+    flash.text = data["flash"];
+    loop.context.clearRect(0, 0, width, height);
+    loop.render();
   }
 
   // update the ball's location
@@ -286,11 +303,30 @@ function updateClient(conn, data) {
 
 function updateServer(paddleKey, data) {
   // assign the client a paddle
-  if ("ready" in data && data["ready"])
+  if ("ready" in data && data["ready"]) {
     clients[paddleKey].send({
       paddleAssignment: paddleKey,
     });
-  else if ("x" in data || "y" in data) {
+
+    // if this is the last client, start the game
+    if (paddleKey == 3) {
+      Object.values(clients).forEach((conn) => conn.send({ start: true }));
+
+      // give the ball a random heading
+      randomizeBallHeading();
+      scene.add(ball);
+
+      scene.remove(flash);
+      loop.start();
+    } else {
+      flash.text = `Waiting for ${3 - paddleKey} player(s)...`;
+      Object.values(clients).forEach((conn) =>
+        conn.send({ flash: flash.text })
+      );
+      loop.context.clearRect(0, 0, width, height);
+      loop.render();
+    }
+  } else if ("x" in data || "y" in data) {
     // locally update the client paddle position
     let clientPaddle = paddles[paddleKey];
     if ("x" in data) clientPaddle.x = data["x"];
