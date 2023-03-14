@@ -1,3 +1,4 @@
-open-endpoints
+server
 
 .env
+node_modules

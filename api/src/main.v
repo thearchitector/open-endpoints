@@ -35,8 +35,3 @@ fn main() {
 		db: db
 	}, port.int())
 }
-
-['/ping']
-fn (mut app App) ping() vweb.Result {
-	return app.text('pong')
-}
