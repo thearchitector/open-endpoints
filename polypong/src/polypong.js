@@ -1,13 +1,9 @@
 /**
+ * @license
  * PolyPong
  * (c) 2023 Elias Gabriel under MIT license
- *
- * There is one host and 3 clients. The host is the source of truth for the
- * balls's location, and disseminates the location of all paddles to all clients.
- * Each client is the source of truth for their own paddle.
  */
-
-const {
+import {
   init,
   Scene,
   Sprite,
@@ -18,8 +14,21 @@ const {
   initInput,
   onInput,
   Text,
-} = kontra;
-const { canvas, context } = init();
+} from "kontra";
+import { Peer } from "peerjs";
+
+/**
+ * constants
+ */
+
+// webrtc config
+const peerConfig = {
+  secure: true,
+};
+const connectionConfig = {
+  // safari doesn't support binary over webrtc
+  serialization: "json",
+};
 
 // board dimensions
 const width = 1024;
@@ -89,11 +98,24 @@ const paddles = [
   }),
 ];
 
-// game logic
 const scene = Scene({
   id: "arena",
   objects: [...paddles, flash],
 });
+
+/**
+ * game logic
+ *
+ * There is one host and 3 clients. The host is the source of truth for the
+ * balls's location, and disseminates the location of all paddles to all clients.
+ * Each client is the source of truth for their own paddle.
+ */
+
+let peer;
+let assignedPaddle = 0;
+let takenPaddles = 1;
+const clients = {};
+
 const loop = GameLoop({
   blur: true,
   update: (_) => {
@@ -133,10 +155,10 @@ const loop = GameLoop({
     Object.entries(clients).forEach(([paddleKey, conn]) => {
       // get the paddle locations of every client except the one we're sending to
       // (we don't need to send a client's paddle location to itself)
-      let others = Object.keys(clients)
+      const others = Object.keys(clients)
         .filter((p) => p != paddleKey)
         .map((p) => {
-          let paddle = paddles[p];
+          const paddle = paddles[p];
           return {
             assignedPaddle: p,
             x: paddle.x,
@@ -156,15 +178,8 @@ const loop = GameLoop({
   render: () => scene.render(),
 });
 
-/* connection logic */
-
-let peer;
-let assignedPaddle = 0;
-let takenPaddles = 1;
-let clients = {};
-
 function randomizeBallHeading() {
-  let direction = degToRad(randInt(0, 365));
+  const direction = degToRad(randInt(0, 365));
   ball.dx = ballSpeed * Math.sin(direction);
   ball.dy = ballSpeed * Math.cos(direction);
 }
@@ -175,75 +190,11 @@ function sendPaddlePosition(conn, paddle, ordinate) {
   conn.send(data);
 }
 
-function hostGame() {
-  // create a webrtc peer with a human-readable UUID
-  peer = new Peer(crypto.randomUUID().split("-")[0]);
-  document.getElementById("menu").innerHTML =
-    "<span>Game ID: <span id='clientID'>&lt;creating...&gt;</span></span>";
-
-  // when the connection broker is connected
-  peer.on("open", (id) => {
-    document.getElementById("clientID").textContent = id;
-    paddles[assignedPaddle].color = paddleColorSelf;
-    loop.render();
-  });
-
-  // whenever another client connects to this game
-  peer.on("connection", (conn) => {
-    // if there are no paddles available, disconnect them (with no error message!)
-    // also send a message to all the other clients that the game has begun
-    console.log("connected to", conn.peer);
-    if (takenPaddles >= 4) {
-      conn.close();
-      return;
-    }
-
-    // keep track of the connection and assign the client a paddle
-    // if they are the last paddle, indicate the game has started
-    let paddleKey = takenPaddles;
-    clients[paddleKey] = conn;
-    conn.on("data", (data) => updateServer(paddleKey, data));
-    takenPaddles += 1;
-  });
-
-  // setup controls
-  initInput();
-  onInput("arrowleft", (_) => (paddles[0].x -= paddleSpeed));
-  onInput("arrowright", (_) => (paddles[0].x += paddleSpeed));
-}
-
-function joinGame() {
-  let gameID = document.getElementById("gameID").value;
-
-  if (gameID.length != 8) {
-    alert("Invalid game id");
-    return;
-  }
-
-  document.getElementById("menu").innerHTML =
-    "<span>Status: <span id='clientID'>&lt;connecting...&gt;</span></span>";
-
-  // establish a connection to the host
-  // if a connection is established, setup the data listener
-  peer = new Peer();
-  peer.on("open", () => {
-    document.getElementById("clientID").innerHTML =
-      "&lt;waiting for assignment...&gt;";
-
-    let conn = peer.connect(gameID);
-    conn.on("open", () => {
-      console.log("connected to server");
-      conn.on("data", (data) => updateClient(conn, data));
-      conn.send({ ready: true });
-    });
-  });
-}
-
 function updateClient(conn, data) {
   // initial startup
   if ("paddleAssignment" in data) {
     assignedPaddle = data["paddleAssignment"];
-    let paddle = paddles[assignedPaddle];
+    const paddle = paddles[assignedPaddle];
     paddle.color = paddleColorSelf;
 
     // setup controls
@@ -294,7 +245,7 @@ function updateClient(conn, data) {
   // update the location of the other paddles
   if ("others" in data) {
     data["others"].forEach((pd) => {
-      let paddle = paddles[pd["assignedPaddle"]];
+      const paddle = paddles[pd["assignedPaddle"]];
       paddle.x = pd["x"];
       paddle.y = pd["y"];
     });
@@ -328,8 +279,78 @@ function updateServer(paddleKey, data) {
     }
   } else if ("x" in data || "y" in data) {
     // locally update the client paddle position
-    let clientPaddle = paddles[paddleKey];
+    const clientPaddle = paddles[paddleKey];
     if ("x" in data) clientPaddle.x = data["x"];
     else clientPaddle.y = data["y"];
   }
 }
+
+/**
+ * initialization
+ */
+
+document.getElementById("hostGame").addEventListener("click", () => {
+  // create a webrtc peer with a human-readable UUID
+  peer = new Peer(crypto.randomUUID().split("-")[0], peerConfig);
+  document.getElementById("menu").innerHTML =
+    "<span>Game ID: <span id='clientID'>&lt;creating...&gt;</span></span>";
+
+  // when the connection broker is connected
+  peer.on("open", (id) => {
+    document.getElementById("clientID").textContent = id;
+    paddles[assignedPaddle].color = paddleColorSelf;
+    loop.render();
+  });
+
+  // whenever another client connects to this game
+  peer.on("connection", (conn) => {
+    // if there are no paddles available, disconnect them (with no error message!)
+    // also send a message to all the other clients that the game has begun
+    console.log("connected to", conn.peer);
+    if (takenPaddles >= 4) {
+      conn.close();
+      return;
+    }
+
+    // keep track of the connection and assign the client a paddle
+    // if they are the last paddle, indicate the game has started
+    const paddleKey = takenPaddles;
+    clients[paddleKey] = conn;
+    conn.on("data", (data) => updateServer(paddleKey, data));
+    takenPaddles += 1;
+  });
+
+  // setup controls
+  initInput();
+  onInput("arrowleft", (_) => (paddles[0].x -= paddleSpeed));
+  onInput("arrowright", (_) => (paddles[0].x += paddleSpeed));
+});
+
+document.getElementById("joinGame").addEventListener("click", () => {
+  const gameID = document.getElementById("gameID").value;
+
+  if (gameID.length != 8) {
+    alert("Invalid game id");
+    return;
+  }
+
+  document.getElementById("menu").innerHTML =
+    "<span>Status: <span id='clientID'>&lt;connecting...&gt;</span></span>";
+
+  // establish a connection to the host
+  // if a connection is established, setup the data listener
+  peer = new Peer(peerConfig);
+  peer.on("open", () => {
+    document.getElementById("clientID").innerHTML =
+      "&lt;waiting for assignment...&gt;";
+
+    const conn = peer.connect(gameID, connectionConfig);
+    conn.on("open", () => {
+      console.log("connected to server");
+      conn.on("data", (data) => updateClient(conn, data));
+      conn.send({ ready: true });
+    });
+  });
+});
+
+init();
