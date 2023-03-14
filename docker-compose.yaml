@@ -33,6 +33,7 @@ services:
     build: polypong
     volumes:
       - ./polypong/static:/polypong/static
+      - /polypong/node_modules
     networks:
       - openendpoint-tools
 
