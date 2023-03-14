@@ -10,7 +10,7 @@ jobs:
       - name: Setup V
         uses: vlang/setup-v@v1
       - name: Check formatting
-        run: v fmt -verify src
+        run: v fmt -verify api
 
   test:
     runs-on: ubuntu-latest
@@ -26,4 +26,4 @@ jobs:
           echo "PGPASSWORD=testing" >> .env
           echo "PGDATABASE=ghaction" >> .env
       - name: Run tests
-        run: docker compose run --rm app ./scripts/tests.sh
+        run: docker compose run --rm api ./scripts/tests.sh
