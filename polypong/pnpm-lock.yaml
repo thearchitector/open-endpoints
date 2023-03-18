@@ -14,6 +14,7 @@ importers:
       peerjs: ^1.4.7
       rollup: ^3.19.1
       rollup-plugin-kontra: ^1.0.1
+      rollup-plugin-lightningcss: ^1.0.0
       serve: ^14.2.0
     dependencies:
       kontra: 9.0.0
@@ -27,6 +28,7 @@ importers:
       '@rollup/plugin-terser': 0.4.0_rollup@3.19.1
       rollup: 3.19.1
       rollup-plugin-kontra: 1.0.1
+      rollup-plugin-lightningcss: 1.0.0
       serve: 14.2.0
 
   parcel-optimizer-kontra:
@@ -2539,7 +2541,6 @@ packages:
     resolution: {integrity: sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg==}
     engines: {node: '>=0.10'}
     hasBin: true
-    dev: false
 
   /dom-serializer/1.4.1:
     resolution: {integrity: sha512-VHwB3KfrcOOkelEG2ZOfxqLZdfkil8PtJi4P8N2MMXucZq2yLp75ClViUlOVwyoHEDjYU433Aq+5zWP61+RGag==}
@@ -2919,7 +2920,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /lightningcss-darwin-x64/1.19.0:
@@ -2928,7 +2928,6 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
-    dev: false
     optional: true
 
   /lightningcss-linux-arm-gnueabihf/1.19.0:
@@ -2937,7 +2936,6 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /lightningcss-linux-arm64-gnu/1.19.0:
@@ -2946,7 +2944,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /lightningcss-linux-arm64-musl/1.19.0:
@@ -2955,7 +2952,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /lightningcss-linux-x64-gnu/1.19.0:
@@ -2964,7 +2960,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /lightningcss-linux-x64-musl/1.19.0:
@@ -2973,7 +2968,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: false
     optional: true
 
   /lightningcss-win32-x64-msvc/1.19.0:
@@ -2982,7 +2976,6 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
-    dev: false
     optional: true
 
   /lightningcss/1.19.0:
@@ -2999,7 +2992,6 @@ packages:
       lightningcss-linux-x64-gnu: 1.19.0
       lightningcss-linux-x64-musl: 1.19.0
       lightningcss-win32-x64-msvc: 1.19.0
-    dev: false
 
   /lines-and-columns/1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
@@ -3443,6 +3435,13 @@ packages:
     resolution: {integrity: sha512-p6ybb58vX8Wk/NQl+I4pbbSBTb9UL2kimYsOD75bKSb4N8mUzs/jN5g6FiyRpMNgFtMysuNfblaumVUtqqwnvA==}
     dependencies:
       preprocess: github.com/straker/preprocess/9ea067b68e5f208c15a47f2249b61c1fbd6e9b33
+    dev: true
+
+  /rollup-plugin-lightningcss/1.0.0:
+    resolution: {integrity: sha512-Lo4rUmI4guePwU22YIGES+r0CjgMklvafGJJ4psFlwiw+Q427cWRnGkRcs06LQacvh53enXIyveuTclFxDmxCg==}
+    dependencies:
+      browserslist: 4.21.5
+      lightningcss: 1.19.0
     dev: true
 
   /rollup/3.19.1:

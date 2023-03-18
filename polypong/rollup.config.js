@@ -3,6 +3,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import kontra from "rollup-plugin-kontra";
 import babel from "@rollup/plugin-babel";
 import terser from "@rollup/plugin-terser";
+import lightningcss from "rollup-plugin-lightningcss";
 
 export default {
   input: "src/polypong.js",
@@ -44,6 +45,12 @@ export default {
         unsafe_proto: true,
         unsafe_regexp: true,
         unsafe_undefined: true,
+      },
+    }),
+    lightningcss({
+      files: ["src/polypong.css"],
+      options: {
+        sourceMap: true,
       },
     }),
   ],
