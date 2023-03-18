@@ -106,82 +106,108 @@ const scene = Scene({
 /**
  * game logic
  *
- * There is one host and 3 clients. The host is the source of truth for the
- * balls's location, and disseminates the location of all paddles to all clients.
- * Each client is the source of truth for their own paddle.
+ * - There is one host and 3 clients. The clients connect to the host, not each other.
+ * - The host is the source of truth for the ball's location and the scores.
+ * - Each client is the source of truth for their own paddle.
+ * - The host disseminates the location of all paddles to all other clients.
+ * - The host determines if a client's paddle hits the ball.
  */
 
 let peer;
-let assignedPaddle = 0;
-let takenPaddles = 1;
 const clients = {};
+let assignedPaddle = 0;
+const paddlesKeys = [0, 1, 2, 3];
+let takenPaddles = 1;
+let lastPaddle = -1;
 
 const loop = GameLoop({
   blur: true,
   update: (_) => {
-    // update ball position
-    ball.advance();
+    // game logic happens only on the host
+    if (assignedPaddle == 0) {
+      // update ball position
+      ball.advance();
 
-    // check for paddle collisions
-    let collided = false;
-    paddles.forEach((paddle, index) => {
-      if (collides(paddle, ball)) {
-        collided = true;
-        if (index % 2 == 0) ball.dy = -ball.dy;
-        else ball.dx = -ball.dx;
+      // check for paddle collisions
+      for (let index = 0; index < takenPaddles; index++) {
+        if (collides(paddles[index], ball)) {
+          if (index % 2 == 0) ball.dy = -ball.dy;
+          else ball.dx = -ball.dx;
+          lastPaddle = index;
+          break;
+        }
       }
-    });
 
-    // check of wall collisions
-    if (
-      !collided &&
-      // top
-      (ball.y < paddles[0].y + paddleB ||
+      // check of wall collisions and award points (if earned)
+      // to avoid complications with the AABB collision check, the ball
+      // must be behind the paddle to count as a wall hit
+      if (
+        // top
+        ball.y < paddles[0].y ||
         // right
-        ball.x + ballSize > paddles[1].x ||
+        ball.x + ballSize > paddles[1].x + paddleB ||
         // bottom
-        ball.y + ballSize > paddles[2].y ||
+        ball.y + ballSize > paddles[2].y + paddleB ||
         // left
-        ball.x < paddles[3].x + paddleB)
-    ) {
-      // reset the ball and give it a random heading
-      ball.x = (width - ballSize) / 2;
-      ball.y = (height - ballSize) / 2;
-      randomizeBallHeading();
-    }
+        ball.x < paddles[3].x
+      ) {
+        // give a point to the client last responsible for hitting the ball
+        // and send that point to all clients
+        if (lastPaddle != -1) {
+          awardPoint(lastPaddle);
+          Object.values(clients).forEach((conn) =>
+            conn.send({ pointTo: lastPaddle })
+          );
+        }
 
-    // send the ball and other client data to all clients
-    // clients is empty unless this is the host
-    Object.entries(clients).forEach(([paddleKey, conn]) => {
-      // get the paddle locations of every client except the one we're sending to
-      // (we don't need to send a client's paddle location to itself)
-      const others = Object.keys(clients)
-        .filter((p) => p != paddleKey)
-        .map((p) => {
-          const paddle = paddles[p];
-          return {
-            assignedPaddle: p,
-            x: paddle.x,
-            y: paddle.y,
-          };
+        // reset the ball and give it a random heading
+        ball.x = (width - ballSize) / 2;
+        ball.y = (height - ballSize) / 2;
+        randomizeBallHeading();
+      }
+
+      // send the ball and other client data to all clients
+      for (let paddleKey = 1; paddleKey < takenPaddles; paddleKey++) {
+        const conn = clients[paddleKey];
+        // get the paddle locations of every client except the one we're sending to
+        // (we don't need to send a client's paddle location to itself)
+        const others = paddlesKeys
+          .filter((p) => p != paddleKey)
+          .map((p) => {
+            const paddle = paddles[p];
+            return {
+              assignedPaddle: p,
+              x: paddle.x,
+              y: paddle.y,
+            };
+          });
+        // also append this (the server host's) paddle
+        others.push({
+          assignedPaddle: 0,
+          x: paddles[0].x,
+          y: paddles[0].y,
         });
-      // also append this (the server host's) paddle
-      others.push({
-        assignedPaddle: 0,
-        x: paddles[0].x,
-        y: paddles[0].y,
-      });
 
-      conn.send({ bx: ball.x, by: ball.y, others: others });
-    });
+        conn.send({ bx: ball.x, by: ball.y, others: others });
+      }
+    }
   },
   render: () => scene.render(),
 });
+
+function awardPoint(scoringPaddle) {
+  let scoreID = "canada";
+  if (scoringPaddle == 1) scoreID = "nyc";
+  else if (scoringPaddle == 2) scoreID = "austin";
+  else if (scoringPaddle == 3) scoreID = "sanfran";
+  document.getElementById(scoreID).innerText -= -1; // wtf
+}
 
 function randomizeBallHeading() {
   const direction = degToRad(randInt(0, 365));
   ball.dx = ballSpeed * Math.sin(direction);
   ball.dy = ballSpeed * Math.cos(direction);
+  lastPaddle = -1;
 }
 
 function sendPaddlePosition(conn, paddle, ordinate) {
@@ -191,7 +217,7 @@ function sendPaddlePosition(conn, paddle, ordinate) {
 }
 
 function updateClient(conn, data) {
-  // initial startup
+  // initialization
   if ("paddleAssignment" in data) {
     assignedPaddle = data["paddleAssignment"];
     const paddle = paddles[assignedPaddle];
@@ -221,19 +247,21 @@ function updateClient(conn, data) {
     }
 
     document.getElementById("clientID").innerHTML = "Connected! ✔";
+    document.getElementById("menu").className = "menu";
+    document.getElementById("scores").className = "";
     loop.render();
   }
-
-  if ("start" in data && data["start"]) {
-    scene.remove(flash);
-    scene.add(ball);
-    loop.start();
-  }
-
   if ("flash" in data) {
     flash.text = data["flash"];
     loop.context.clearRect(0, 0, width, height);
     loop.render();
+  }
+
+  // game start
+  if ("start" in data && data["start"]) {
+    scene.remove(flash);
+    scene.add(ball);
+    loop.start();
   }
 
   // update the ball's location
@@ -250,6 +278,9 @@ function updateClient(conn, data) {
       paddle.y = pd["y"];
     });
   }
+
+  // someone earned a point
+  if ("pointTo" in data) awardPoint(data["pointTo"]);
 }
 
 function updateServer(paddleKey, data) {
@@ -292,13 +323,17 @@ function updateServer(paddleKey, data) {
 document.getElementById("hostGame").addEventListener("click", () => {
   // create a webrtc peer with a human-readable UUID
   peer = new Peer(crypto.randomUUID().split("-")[0], peerConfig);
-  document.getElementById("menu").innerHTML =
+  const menu = document.getElementById("menu");
+
+  menu.innerHTML =
     "<span>Game ID: <span id='clientID'>&lt;creating...&gt;</span></span>";
 
   // when the connection broker is connected
   peer.on("open", (id) => {
     document.getElementById("clientID").textContent = id;
     paddles[assignedPaddle].color = paddleColorSelf;
+    menu.className = "menu";
+    document.getElementById("scores").className = "";
     loop.render();
   });
 
@@ -308,6 +343,7 @@ document.getElementById("hostGame").addEventListener("click", () => {
     // also send a message to all the other clients that the game has begun
     console.log("connected to", conn.peer);
     if (takenPaddles >= 4) {
+      console.log("too many players, evicting", conn.peer);
       conn.close();
       return;
     }
