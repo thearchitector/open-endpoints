@@ -2,12 +2,16 @@
 
 FROM node:alpine
 
+RUN corepack enable
+
+USER node
 WORKDIR /polypong
+
+COPY pnpm-lock.yaml ./
+RUN pnpm fetch
 
 COPY ./ /polypong
 
-RUN corepack enable && \
-    pnpm install
+RUN pnpm install --offline
 
-USER node
 CMD [ "pnpm", "build" ]
