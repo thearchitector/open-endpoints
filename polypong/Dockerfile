@@ -2,10 +2,8 @@
 
 FROM node:alpine
 
-RUN corepack enable
-
-USER node
 WORKDIR /polypong
+RUN corepack enable
 
 COPY pnpm-lock.yaml ./
 RUN pnpm fetch
