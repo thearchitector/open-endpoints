@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>pong</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="polypong.css" />
+  </head>
+
+  <body>
+    <p id="menu">
+      <button id="hostGame">Host Game</button> ||
+      <span>
+        Join Game:<input
+          id="gameID"
+          type="text"
+          placeholder="..."
+          maxlength="8"
+        />
+        <button id="joinGame">Connect</button>
+      </span>
+    </p>
+
+    <section>
+      <canvas
+        id="arena"
+        class="centered"
+        width="1024px"
+        height="576px"
+      ></canvas>
+
+      <div id="scores" class="hidden">
+        <p id="canada" class="score centered">0</p>
+        <p id="nyc" class="score centered">0</p>
+        <p id="austin" class="score centered">0</p>
+        <p id="sanfran" class="score centered">0</p>
+      </div>
+    </section>
+
+    <p id="nosupport" class="hidden centered">
+      Your browser is too old to support both
+      <a
+        referrerpolicy="no-referrer"
+        target="_blank"
+        href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API"
+        >WebRTC peer-to-peer communication</a
+      >
+      and
+      <a
+        referrerpolicy="no-referrer"
+        target="_blank"
+        href="https://caniuse.com/es6"
+        >ES6</a
+      >. While the latter is solvable via transpilation (automatic JavaScript
+      syntax conversion), the former is not; thus, this game makes no
+      concessions to provide ES5 support. You're welcome to play on something
+      from this decade, however!🔮
+    </p>
+    <script type="module" src="polypong.js"></script>
+    <script nomodule src="nofun.js"></script>
+  </body>
+</html>

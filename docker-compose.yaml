@@ -15,8 +15,8 @@ services:
       - openendpoint-tools
     restart: always
 
-  app:
-    build: .
+  api:
+    build: api
     env_file: .env
     ports:
       - 8000:8000
@@ -25,7 +25,19 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      polypong:
+        condition: service_completed_successfully
     restart: always
+
+  polypong:
+    build: polypong
+    init: true
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./polypong/static:/polypong/static
+    networks:
+      - openendpoint-tools
 
 volumes:
   openendoint-db:
