@@ -25,10 +25,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      polypong:
+        condition: service_completed_successfully
     restart: always
 
   polypong:
     build: polypong
+    user: "node"
+    init: true
+    environment:
+      - NODE_ENV=production
     volumes:
       - ./polypong/static:/polypong/static
       # - /polypong/node_modules
