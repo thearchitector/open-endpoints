@@ -26,7 +26,15 @@
     "build": "rollup -c"
   },
   "babel": {
-    "presets": ["@babel/preset-env"]
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "bugfixes": true,
+          "spec": true
+        }
+      ]
+    ]
   },
-  "browserslist": "supports rtcpeerconnection and supports es6-module"
+  "browserslist": "supports es6-module and supports rtcpeerconnection and supports let and supports const and supports template-literals and supports arrow-functions" 
 }

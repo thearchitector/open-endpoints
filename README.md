@@ -11,7 +11,7 @@ A set of arguably useful endpoints for various management, testing, and distribu
 
 ## Endpoints
 
-- [/ping/](polypong/static/index.html)
+- [/ping/](polypong/README.md)
 
   A better (by some metrics) healthcheck endpoint.
 

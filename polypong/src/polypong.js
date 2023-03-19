@@ -124,14 +124,14 @@ const loop = GameLoop({
   blur: true,
   update: (_) => {
     // game logic happens only on the host
-    if (assignedPaddle == 0) {
+    if (assignedPaddle === 0) {
       // update ball position
       ball.advance();
 
       // check for paddle collisions
       for (let index = 0; index < takenPaddles; index++) {
         if (collides(paddles[index], ball)) {
-          if (index % 2 == 0) ball.dy = -ball.dy;
+          if (index % 2 === 0) ball.dy = -ball.dy;
           else ball.dx = -ball.dx;
           lastPaddle = index;
           break;
@@ -153,7 +153,7 @@ const loop = GameLoop({
       ) {
         // give a point to the client last responsible for hitting the ball
         // and send that point to all clients
-        if (lastPaddle != -1) {
+        if (lastPaddle !== -1) {
           awardPoint(lastPaddle);
           Object.values(clients).forEach((conn) =>
             conn.send({ pointTo: lastPaddle })
@@ -197,9 +197,9 @@ const loop = GameLoop({
 
 function awardPoint(scoringPaddle) {
   let scoreID = "canada";
-  if (scoringPaddle == 1) scoreID = "nyc";
-  else if (scoringPaddle == 2) scoreID = "austin";
-  else if (scoringPaddle == 3) scoreID = "sanfran";
+  if (scoringPaddle === 1) scoreID = "nyc";
+  else if (scoringPaddle === 2) scoreID = "austin";
+  else if (scoringPaddle === 3) scoreID = "sanfran";
   document.getElementById(scoreID).innerText -= -1; // wtf
 }
 
@@ -211,8 +211,9 @@ function randomizeBallHeading() {
 }
 
 function sendPaddlePosition(conn, paddle, ordinate) {
-  if (ordinate == "x") data = { x: paddle.x };
-  else data = { y: paddle.y };
+  const data = {};
+  if (ordinate === "x") data["x"] = paddle.x;
+  else data["y"] = paddle.y;
   conn.send(data);
 }
 
@@ -226,7 +227,7 @@ function updateClient(conn, data) {
     // setup controls
     initInput();
 
-    if (assignedPaddle % 2 == 0) {
+    if (assignedPaddle % 2 === 0) {
       onInput("arrowleft", (_) => {
         paddle.x -= paddleSpeed;
         sendPaddlePosition(conn, paddle, "x");
@@ -291,7 +292,7 @@ function updateServer(paddleKey, data) {
     });
 
     // if this is the last client, start the game
-    if (paddleKey == 3) {
+    if (paddleKey === 3) {
       Object.values(clients).forEach((conn) => conn.send({ start: true }));
 
       // give the ball a random heading
