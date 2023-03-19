@@ -25,5 +25,7 @@ jobs:
           echo "PGUSER=ghaction" >> .env
           echo "PGPASSWORD=testing" >> .env
           echo "PGDATABASE=ghaction" >> .env
+      - name: Build images
+        run: docker compose build
       - name: Run tests
         run: docker compose run --rm api ./scripts/tests.sh
